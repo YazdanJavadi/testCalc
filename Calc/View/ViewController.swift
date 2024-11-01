@@ -20,7 +20,6 @@ class ViewController: UIViewController {
         collectionView.dataSource = self
         collectionView.delegate = self
         
-        // Observe updates from the viewModel
         viewModel.updateViews = { [weak self] in
             self?.collectionView.reloadData()
         }
@@ -62,7 +61,6 @@ extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource, 
         
         var buttonToDisplay = calcButton
         if calcButton == .allClear || calcButton == .delete {
-            // Decide whether to show "AC" or "Del" based on the viewModel state
             let shouldShowDelete = !viewModel.isResultDisplayed && viewModel.calcHeaderLabel != "0"
             buttonToDisplay = shouldShowDelete ? .delete : .allClear
         }
@@ -79,7 +77,6 @@ extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource, 
 
     @objc func handleLongPressOnDelete(_ gestureRecognizer: UILongPressGestureRecognizer) {
         if gestureRecognizer.state == .began {
-            // Call the didSelectAllClear function in the view model
             viewModel.didSelectAllClear()
         }
     }

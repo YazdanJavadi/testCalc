@@ -10,8 +10,8 @@ import Foundation
 class CalcControllerViewModel {
     
     var updateViews: (() -> Void)?
-    var isResultDisplayed: Bool = false // Made public to access in ViewController
-    var equation: String = "" // Tracks the current equation
+    var isResultDisplayed: Bool = false
+    var equation: String = ""
     var calcHeaderLabel: String = "0"
     
     let calcButtonCells: [Buttons] = [
@@ -29,7 +29,6 @@ class CalcControllerViewModel {
     var isDecimalActive: Bool = false
     
     func didSelectAllClear() {
-        // Reset all values
         equation = ""
         firstNumber = nil
         secondNumber = nil
@@ -42,32 +41,26 @@ class CalcControllerViewModel {
     }
     
     func didSelectNumber(_ number: Int) {
-        // Reset if result was just displayed
         if isResultDisplayed {
             didSelectAllClear()
         }
         
-        // Append the number to calcHeaderLabel as a string
         if calcHeaderLabel == "0" && !isDecimalActive {
             calcHeaderLabel = "\(number)"
         } else {
             calcHeaderLabel += "\(number)"
         }
         
-        // Remove commas for storing in firstNumber or secondNumber
         let rawNumberString = calcHeaderLabel.replacingOccurrences(of: ",", with: "")
         
-        // Update the internal representation of the number
         if currentNumber == .firstNumber {
             firstNumber = Double(rawNumberString)
         } else {
             secondNumber = Double(rawNumberString)
         }
         
-        // Format calcHeaderLabel with commas for display
         calcHeaderLabel = formatWithCommas(rawNumberString)
         
-        // Update the equation label
         if currentNumber == .firstNumber {
             equation = calcHeaderLabel
         } else if currentNumber == .secondNumber, let op = operationSymbol() {
@@ -79,17 +72,14 @@ class CalcControllerViewModel {
     }
     
     func didSelectOperation(_ operation: CalcLogic) {
-        // If result was just displayed, continue with the result as the first number
         if isResultDisplayed {
             isResultDisplayed = false
         }
         
         if self.operation != nil && currentNumber == .secondNumber {
-            // Perform previous operation
             didSelectEquals()
             firstNumber = Double(calcHeaderLabel.replacingOccurrences(of: ",", with: "")) ?? 0
         } else {
-            // Save the first number
             if firstNumber == nil {
                 firstNumber = Double(calcHeaderLabel.replacingOccurrences(of: ",", with: "")) ?? 0
             }
@@ -99,10 +89,8 @@ class CalcControllerViewModel {
         currentNumber = .secondNumber
         isDecimalActive = false
         
-        // Update equation to show first number and operation
         equation = "\(formatNumberForEquation(firstNumber)) \(operationSymbol() ?? "")"
         
-        // Prepare to accept second number
         calcHeaderLabel = "0"
         
         updateViews?()
@@ -116,10 +104,8 @@ class CalcControllerViewModel {
         let result = performOperation(operation, firstValue, secondValue)
         calcHeaderLabel = formatResult(result)
         
-        // Update the equation to show the full calculation
         equation = "\(formatNumberForEquation(firstValue)) \(operationSymbol() ?? "") \(formatNumberForEquation(secondValue)) ="
         
-        // Prepare for next calculation
         firstNumber = result
         secondNumber = nil
         self.operation = nil
@@ -147,7 +133,7 @@ class CalcControllerViewModel {
         let numberFormatter = NumberFormatter()
         numberFormatter.numberStyle = .decimal
         numberFormatter.groupingSeparator = ","
-        numberFormatter.maximumFractionDigits = 10 // Adjust based on decimal precision needed
+        numberFormatter.maximumFractionDigits = 10
         
         if let number = Double(numberString) {
             return numberFormatter.string(from: NSNumber(value: number)) ?? numberString
@@ -158,9 +144,9 @@ class CalcControllerViewModel {
     
     private func formatResult(_ result: Double) -> String {
         if result.truncatingRemainder(dividingBy: 1) == 0 {
-            return formatWithCommas(String(Int(result))) // Show as integer
+            return formatWithCommas(String(Int(result)))
         } else {
-            return formatWithCommas(String(result)) // Show as double
+            return formatWithCommas(String(result))
         }
     }
     
@@ -201,7 +187,6 @@ class CalcControllerViewModel {
             }
         }
         
-        // Update the equation label
         if currentNumber == .firstNumber {
             equation = calcHeaderLabel
         } else if currentNumber == .secondNumber, let op = operationSymbol() {
@@ -213,7 +198,7 @@ class CalcControllerViewModel {
     }
     
     func didSelectDecimal() {
-        guard !isDecimalActive else { return } // Prevent multiple decimals
+        guard !isDecimalActive else { return }
         isDecimalActive = true
         
         if !calcHeaderLabel.contains(".") {
@@ -226,7 +211,6 @@ class CalcControllerViewModel {
         if isResultDisplayed || calcHeaderLabel == "0" {
             didSelectAllClear()
         } else {
-            // Remove the last character
             calcHeaderLabel.removeLast()
             
             if calcHeaderLabel.isEmpty || calcHeaderLabel == "-" || calcHeaderLabel == "." {
@@ -237,7 +221,6 @@ class CalcControllerViewModel {
                     secondNumber = nil
                 }
             } else {
-                // Remove commas for parsing
                 let rawNumberString = calcHeaderLabel.replacingOccurrences(of: ",", with: "")
                 if currentNumber == .firstNumber {
                     firstNumber = Double(rawNumberString)
@@ -246,7 +229,6 @@ class CalcControllerViewModel {
                 }
             }
             
-            // Update the equation label
             if currentNumber == .firstNumber {
                 equation = calcHeaderLabel
             } else if currentNumber == .secondNumber, let op = operationSymbol() {

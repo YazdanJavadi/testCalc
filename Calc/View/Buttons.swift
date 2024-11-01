@@ -24,11 +24,9 @@ final class Views: UICollectionViewCell {
     public func configure(with calcButton: Buttons, shouldShowDelete: Bool = false) {
         self.calcButton = calcButton
         
-        // Set title and background color based on button type
         titleLabel.text = shouldShowDelete && calcButton == .allClear ? Buttons.delete.title : calcButton.title
         backgroundColor = calcButton.color
         
-        // Set text color based on button type
         switch calcButton {
         case .allClear, .plusMinus, .percentage:
             titleLabel.textColor = .black
@@ -43,7 +41,6 @@ final class Views: UICollectionViewCell {
         addSubview(titleLabel)
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         
-        // Set corner radius based on button type
         if case .number(0) = calcButton {
             layer.cornerRadius = 36
             let spacing = frame.width - frame.height
@@ -67,7 +64,6 @@ final class Views: UICollectionViewCell {
     
     override var isHighlighted: Bool {
         didSet {
-            // Change background color on press
             backgroundColor = isHighlighted ? .lightGray : calcButton.color
         }
     }

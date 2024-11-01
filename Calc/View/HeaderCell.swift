@@ -19,19 +19,19 @@ final class HeaderCell: UICollectionViewCell {
         label.numberOfLines = 1
         label.adjustsFontSizeToFitWidth = true
         label.minimumScaleFactor = 0.5
-        label.isHidden = true // Hidden initially
+        label.isHidden = true
         return label
     }()
     
     private let label: UILabel = {
         let label = UILabel()
         label.textColor = .white
-        label.textAlignment = .right // Right alignment for right-to-left writing
+        label.textAlignment = .right
         label.font = .systemFont(ofSize: 72, weight: .regular)
         label.numberOfLines = 1
-        label.adjustsFontSizeToFitWidth = true // Enable automatic font size adjustment
-        label.minimumScaleFactor = 0.3 // Adjust as needed
-        label.lineBreakMode = .byTruncatingHead // Truncate the beginning if needed
+        label.adjustsFontSizeToFitWidth = true
+        label.minimumScaleFactor = 0.3
+        label.lineBreakMode = .byTruncatingHead
         return label
     }()
     
@@ -59,7 +59,6 @@ final class HeaderCell: UICollectionViewCell {
     private func setupViews() {
         self.backgroundColor = .black
         
-        // Add equation label and main label
         self.addSubview(equationLabel)
         self.addSubview(label)
         
@@ -67,12 +66,10 @@ final class HeaderCell: UICollectionViewCell {
         label.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
-            // Equation label constraints
             equationLabel.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -16),
             equationLabel.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 16),
             equationLabel.bottomAnchor.constraint(equalTo: label.topAnchor, constant: -8),
             
-            // Main label constraints
             label.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -16),
             label.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 16),
             label.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -16),
