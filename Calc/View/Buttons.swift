@@ -21,14 +21,14 @@ final class Views: UICollectionViewCell {
         return label
     }()
     
-    public func configure(with calcButton: Buttons) {
+    public func configure(with calcButton: Buttons, shouldShowDelete: Bool = false) {
         self.calcButton = calcButton
         
         // Set title and background color based on button type
-        titleLabel.text = calcButton.title
+        titleLabel.text = shouldShowDelete && calcButton == .allClear ? Buttons.delete.title : calcButton.title
         backgroundColor = calcButton.color
         
-        // Set text color manually for each case
+        // Set text color based on button type
         switch calcButton {
         case .allClear, .plusMinus, .percentage:
             titleLabel.textColor = .black
@@ -65,39 +65,22 @@ final class Views: UICollectionViewCell {
         }
     }
     
-    override func prepareForReuse() {
-        super.prepareForReuse()
-        titleLabel.removeFromSuperview()
-    }
-}
-
-enum Buttons {
-    case allClear, plusMinus, percentage, divide, multiply, subtract, add, equal, decimal
-    case number(Int)
-    
-    var title: String {
-        switch self {
-        case .allClear: return "AC"
-        case .plusMinus: return "+/-"
-        case .percentage: return "%"
-        case .divide: return "÷"
-        case .multiply: return "×"
-        case .subtract: return "-"
-        case .add: return "+"
-        case .equal: return "="
-        case .number(let value): return "\(value)"
-        case .decimal: return "."
+    override var isHighlighted: Bool {
+        didSet {
+            // Change background color on press
+            backgroundColor = isHighlighted ? .lightGray : calcButton.color
         }
     }
     
-    var color: UIColor {
-        switch self {
-        case .allClear, .plusMinus, .percentage:
-            return .lightGray
-        case .divide, .multiply, .subtract, .add, .equal:
-            return .systemOrange
-        case .number, .decimal:
-            return .darkGray
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        titleLabel.removeFromSuperview()
+        backgroundColor = calcButton.color
+    }
+    
+    public func updateButtonTitleForClear(hasContent: Bool) {
+        if calcButton == .allClear {
+            titleLabel.text = hasContent ? Buttons.delete.title : Buttons.allClear.title
         }
     }
 }

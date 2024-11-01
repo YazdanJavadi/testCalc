@@ -64,9 +64,9 @@
 		B81ADD882CAFE3EA00780B4D /* Calc */ = {
 			isa = PBXGroup;
 			children = (
-				B81ADDA52CB0102800780B4D /* Models */,
+				B81ADDA52CB0102800780B4D /* Model */,
 				B81ADDA22CAFFC8700780B4D /* ViewModel */,
-				B81ADD9F2CAFE45000780B4D /* Views */,
+				B81ADD9F2CAFE45000780B4D /* View */,
 				B81ADD892CAFE3EA00780B4D /* AppDelegate.swift */,
 				B81ADD8B2CAFE3EA00780B4D /* SceneDelegate.swift */,
 				B81ADD8F2CAFE3EA00780B4D /* Main.storyboard */,
@@ -77,14 +77,14 @@
 			path = Calc;
 			sourceTree = "<group>";
 		};
-		B81ADD9F2CAFE45000780B4D /* Views */ = {
+		B81ADD9F2CAFE45000780B4D /* View */ = {
 			isa = PBXGroup;
 			children = (
 				B81ADD9D2CAFE44300780B4D /* Buttons.swift */,
 				B81ADDA02CAFF06400780B4D /* HeaderCell.swift */,
 				B81ADD8D2CAFE3EA00780B4D /* ViewController.swift */,
 			);
-			path = Views;
+			path = View;
 			sourceTree = "<group>";
 		};
 		B81ADDA22CAFFC8700780B4D /* ViewModel */ = {
@@ -95,12 +95,12 @@
 			path = ViewModel;
 			sourceTree = "<group>";
 		};
-		B81ADDA52CB0102800780B4D /* Models */ = {
+		B81ADDA52CB0102800780B4D /* Model */ = {
 			isa = PBXGroup;
 			children = (
 				B81ADDA62CB0103000780B4D /* Model.swift */,
 			);
-			path = Models;
+			path = Model;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
