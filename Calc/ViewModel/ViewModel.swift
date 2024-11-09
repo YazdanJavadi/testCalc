@@ -8,12 +8,12 @@
 import Foundation
 
 class CalcControllerViewModel {
-    
+
     var updateViews: (() -> Void)?
-    var isResultDisplayed: Bool = false
+    var model = CalculatorModel()
     var equation: String = ""
     var calcHeaderLabel: String = "0"
-    
+
     let calcButtonCells: [Buttons] = [
         .allClear, .plusMinus, .percentage, .divide,
         .number(7), .number(8), .number(9), .multiply,
@@ -21,231 +21,112 @@ class CalcControllerViewModel {
         .number(1), .number(2), .number(3), .add,
         .number(0), .decimal, .equal
     ]
-    
-    var firstNumber: Double? = nil
-    var secondNumber: Double? = nil
-    var operation: CalcLogic? = nil
-    var currentNumber: CurrentNumber = .firstNumber
-    var isDecimalActive: Bool = false
-    
+
     func didSelectAllClear() {
-        equation = ""
-        firstNumber = nil
-        secondNumber = nil
-        operation = nil
-        currentNumber = .firstNumber
-        isDecimalActive = false
+        model.reset()
         calcHeaderLabel = "0"
-        isResultDisplayed = false
+        equation = ""
         updateViews?()
     }
-    
+
     func didSelectNumber(_ number: Int) {
-        if isResultDisplayed {
+        if model.isResultDisplayed {
             didSelectAllClear()
         }
-        
-        if calcHeaderLabel == "0" && !isDecimalActive {
-            calcHeaderLabel = "\(number)"
-        } else {
-            calcHeaderLabel += "\(number)"
+        model.inputNumber("\(number)")
+        updateDisplay()
+    }
+
+    func didSelectOperation(_ operation: CalcLogic) {
+        if model.isResultDisplayed {
+            model.isResultDisplayed = false
         }
-        
-        let rawNumberString = calcHeaderLabel.replacingOccurrences(of: ",", with: "")
-        
-        if currentNumber == .firstNumber {
-            firstNumber = Double(rawNumberString)
-        } else {
-            secondNumber = Double(rawNumberString)
-        }
-        
-        calcHeaderLabel = formatWithCommas(rawNumberString)
-        
-        if currentNumber == .firstNumber {
-            equation = calcHeaderLabel
-        } else if currentNumber == .secondNumber, let op = operationSymbol() {
-            equation = "\(formatNumberForEquation(firstNumber)) \(op) \(calcHeaderLabel)"
-        }
-        
-        isResultDisplayed = false
+        model.inputOperation(operation)
+        updateEquation()
+        calcHeaderLabel = "0"
         updateViews?()
     }
-    
-    func didSelectOperation(_ operation: CalcLogic) {
-        if isResultDisplayed {
-            isResultDisplayed = false
+
+    func didSelectEquals() {
+        if let result = model.calculateResult() {
+            calcHeaderLabel = formatResult(result)
+            equation = ""
+            updateViews?()
         }
-        
-        if self.operation != nil && currentNumber == .secondNumber {
-            didSelectEquals()
-            firstNumber = Double(calcHeaderLabel.replacingOccurrences(of: ",", with: "")) ?? 0
+    }
+
+    func didSelectPlusMinus() {
+        model.togglePlusMinus()
+        updateDisplay()
+    }
+
+    func didSelectPercentage() {
+        model.applyPercentage()
+        updateDisplay()
+    }
+
+    func didSelectDecimal() {
+        if model.isResultDisplayed {
+            didSelectAllClear()
+        }
+        model.inputDecimal()
+        updateDisplay()
+    }
+
+    func didSelectDelete() {
+        if model.isResultDisplayed || calcHeaderLabel == "0" {
+            didSelectAllClear()
         } else {
-            if firstNumber == nil {
-                firstNumber = Double(calcHeaderLabel.replacingOccurrences(of: ",", with: "")) ?? 0
+            model.deleteLastInput()
+            updateDisplay()
+        }
+    }
+
+    private func updateDisplay() {
+        if model.currentNumber == .firstNumber {
+            calcHeaderLabel = formatResult(model.firstNumber)
+        } else {
+            calcHeaderLabel = formatResult(model.secondNumber)
+        }
+        updateEquation()
+        updateViews?()
+    }
+
+    private func updateEquation() {
+        equation = formatResult(model.firstNumber)
+        if let op = operationSymbol() {
+            equation += " \(op)"
+            if !model.secondNumber.isEmpty {
+                equation += " \(formatResult(model.secondNumber))"
             }
         }
-        
-        self.operation = operation
-        currentNumber = .secondNumber
-        isDecimalActive = false
-        
-        equation = "\(formatNumberForEquation(firstNumber)) \(operationSymbol() ?? "")"
-        
-        calcHeaderLabel = "0"
-        
-        updateViews?()
     }
-    
-    func didSelectEquals() {
-        guard let operation = operation else { return }
-        guard let firstValue = firstNumber else { return }
-        guard let secondValue = secondNumber else { return }
-        
-        let result = performOperation(operation, firstValue, secondValue)
-        calcHeaderLabel = formatResult(result)
-        
-        equation = "\(formatNumberForEquation(firstValue)) \(operationSymbol() ?? "") \(formatNumberForEquation(secondValue)) ="
-        
-        firstNumber = result
-        secondNumber = nil
-        self.operation = nil
-        currentNumber = .firstNumber
-        isDecimalActive = false
-        isResultDisplayed = true
-        
-        updateViews?()
-    }
-    
-    private func performOperation(_ operation: CalcLogic, _ firstNumber: Double, _ secondNumber: Double) -> Double {
-        switch operation {
-        case .add:
-            return firstNumber + secondNumber
-        case .subtract:
-            return firstNumber - secondNumber
-        case .multiply:
-            return firstNumber * secondNumber
-        case .divide:
-            return firstNumber / secondNumber
+
+    private func formatResult(_ numberString: String) -> String {
+        guard let number = Double(numberString) else { return numberString }
+
+        if number.truncatingRemainder(dividingBy: 1) == 0 {
+            return formatWithCommas(String(Int(number)))
+        } else {
+            return formatWithCommas(numberString)
         }
     }
-    
+
     private func formatWithCommas(_ numberString: String) -> String {
         let numberFormatter = NumberFormatter()
         numberFormatter.numberStyle = .decimal
         numberFormatter.groupingSeparator = ","
         numberFormatter.maximumFractionDigits = 10
-        
+
         if let number = Double(numberString) {
             return numberFormatter.string(from: NSNumber(value: number)) ?? numberString
         }
-        
+
         return numberString
     }
-    
-    private func formatResult(_ result: Double) -> String {
-        if result.truncatingRemainder(dividingBy: 1) == 0 {
-            return formatWithCommas(String(Int(result)))
-        } else {
-            return formatWithCommas(String(result))
-        }
-    }
-    
-    func didSelectPlusMinus() {
-        if currentNumber == .firstNumber {
-            if let first = firstNumber {
-                firstNumber = -first
-                calcHeaderLabel = formatResult(firstNumber!)
-            }
-        } else {
-            if let second = secondNumber {
-                secondNumber = -second
-                calcHeaderLabel = formatResult(secondNumber!)
-            }
-        }
-        
-        // Update the equation label
-        if currentNumber == .firstNumber {
-            equation = calcHeaderLabel
-        } else if currentNumber == .secondNumber, let op = operationSymbol() {
-            equation = "\(formatNumberForEquation(firstNumber)) \(op) \(calcHeaderLabel)"
-        }
-        
-        isResultDisplayed = false
-        updateViews?()
-    }
-    
-    func didSelectPercentage() {
-        if currentNumber == .firstNumber {
-            if let first = firstNumber {
-                firstNumber = first / 100
-                calcHeaderLabel = formatResult(firstNumber!)
-            }
-        } else {
-            if let second = secondNumber {
-                secondNumber = second / 100
-                calcHeaderLabel = formatResult(secondNumber!)
-            }
-        }
-        
-        if currentNumber == .firstNumber {
-            equation = calcHeaderLabel
-        } else if currentNumber == .secondNumber, let op = operationSymbol() {
-            equation = "\(formatNumberForEquation(firstNumber)) \(op) \(calcHeaderLabel)"
-        }
-        
-        isResultDisplayed = false
-        updateViews?()
-    }
-    
-    func didSelectDecimal() {
-        guard !isDecimalActive else { return }
-        isDecimalActive = true
-        
-        if !calcHeaderLabel.contains(".") {
-            calcHeaderLabel += "."
-            updateViews?()
-        }
-    }
-    
-    func didSelectDelete() {
-        if isResultDisplayed || calcHeaderLabel == "0" {
-            didSelectAllClear()
-        } else {
-            calcHeaderLabel.removeLast()
-            
-            if calcHeaderLabel.isEmpty || calcHeaderLabel == "-" || calcHeaderLabel == "." {
-                calcHeaderLabel = "0"
-                if currentNumber == .firstNumber {
-                    firstNumber = nil
-                } else {
-                    secondNumber = nil
-                }
-            } else {
-                let rawNumberString = calcHeaderLabel.replacingOccurrences(of: ",", with: "")
-                if currentNumber == .firstNumber {
-                    firstNumber = Double(rawNumberString)
-                } else {
-                    secondNumber = Double(rawNumberString)
-                }
-            }
-            
-            if currentNumber == .firstNumber {
-                equation = calcHeaderLabel
-            } else if currentNumber == .secondNumber, let op = operationSymbol() {
-                equation = "\(formatNumberForEquation(firstNumber)) \(op) \(calcHeaderLabel)"
-            }
-            
-            updateViews?()
-        }
-    }
-    
-    private func formatNumberForEquation(_ number: Double?) -> String {
-        guard let num = number else { return "0" }
-        return formatResult(num)
-    }
-    
+
     private func operationSymbol() -> String? {
-        guard let op = operation else { return nil }
+        guard let op = model.operation else { return nil }
         switch op {
         case .add:
             return "+"
@@ -257,11 +138,11 @@ class CalcControllerViewModel {
             return "÷"
         }
     }
-    
+
     func didSelectButton(with calcButton: Buttons) {
         switch calcButton {
         case .allClear:
-            didSelectDelete()
+            didSelectAllClear()
         case .plusMinus:
             didSelectPlusMinus()
         case .percentage:

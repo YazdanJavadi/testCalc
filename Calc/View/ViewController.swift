@@ -61,7 +61,7 @@ extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource, 
         
         var buttonToDisplay = calcButton
         if calcButton == .allClear || calcButton == .delete {
-            let shouldShowDelete = !viewModel.isResultDisplayed && viewModel.calcHeaderLabel != "0"
+            let shouldShowDelete = !viewModel.model.isResultDisplayed && viewModel.calcHeaderLabel != "0"
             buttonToDisplay = shouldShowDelete ? .delete : .allClear
         }
         
